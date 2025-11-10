@@ -10,11 +10,9 @@ export function Navbar() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: "/", label: "Home" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/borrow", label: "Borrow" },
     { href: "/repay", label: "Repay" },
-    { href: "/admin", label: "Admin" },
   ]
 
   return (
@@ -36,12 +34,19 @@ export function Navbar() {
             ))}
           </div>
 
-          <Button
-            onClick={connected ? disconnect : connect}
-            className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0"
-          >
-            {connected ? `${address}` : "Connect Wallet"}
-          </Button>
+          <div className="flex gap-2">
+            <Link href="/borrow">
+              <Button className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0 hidden sm:inline-flex">
+                Borrow Now
+              </Button>
+            </Link>
+            <Button
+              onClick={connected ? disconnect : connect}
+              className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0"
+            >
+              {connected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : "Connect"}
+            </Button>
+          </div>
         </div>
       </div>
     </nav>
