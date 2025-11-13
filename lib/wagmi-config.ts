@@ -1,6 +1,6 @@
-import { createConfig, http } from 'wagmi'
-import { mainnet, sepolia, localhost } from 'wagmi/chains'
-import { injected } from 'wagmi/connectors'
+import { createConfig, http } from "wagmi";
+import { mainnet, sepolia, localhost } from "wagmi/chains";
+import { injected } from "wagmi/connectors";
 
 // Configure chains - using mainnet, sepolia, and localhost for development
 export const config = createConfig({
@@ -8,7 +8,7 @@ export const config = createConfig({
   connectors: [
     injected({
       // Configure which wallets to detect
-      target: 'metaMask', // Prioritize MetaMask but will work with any injected wallet
+      target: "metaMask", // Prioritize MetaMask but will work with any injected wallet
     }),
   ],
   transports: {
@@ -16,17 +16,10 @@ export const config = createConfig({
     [sepolia.id]: http(),
     [localhost.id]: http(), // For local development
   },
-  // App metadata
-  metadata: {
-    name: 'BitLoans',
-    description: 'Decentralized Lending Platform',
-    url: 'https://bitloans.app', // Replace with your actual URL
-    icons: ['/icon.svg'],
-  },
-})
+});
 
-declare module 'wagmi' {
+declare module "wagmi" {
   interface Register {
-    config: typeof config
+    config: typeof config;
   }
 }
