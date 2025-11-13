@@ -1,6 +1,6 @@
 "use client"
 
-import { WalletProvider, useWallet } from "@/lib/wallet-context"
+import { useWallet } from "@/lib/use-wallet"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -107,9 +107,5 @@ function RepayContent() {
 }
 
 export default function Repay() {
-  return (
-    <WalletProvider>
-      <RepayContent />
-    </WalletProvider>
-  )
+  return <RepayContent />
 }

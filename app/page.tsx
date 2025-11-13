@@ -5,7 +5,7 @@ import { Navbar } from "@/components/navbar"
 import Link from "next/link"
 import { ArrowRight, ArrowDown } from "lucide-react"
 import { motion } from "framer-motion"
-import { WalletProvider } from "@/lib/wallet-context"
+
 
 function HomeContent() {
   const steps = [
@@ -113,9 +113,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <WalletProvider>
-      <HomeContent />
-    </WalletProvider>
-  )
+  return <HomeContent />
 }

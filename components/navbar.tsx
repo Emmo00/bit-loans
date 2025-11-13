@@ -1,12 +1,11 @@
 "use client"
 
-import { useWallet } from "@/lib/wallet-context"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { WalletConnect } from "./wallet-connect"
 
 export function Navbar() {
-  const { connected, connect, disconnect, address } = useWallet()
   const pathname = usePathname()
 
   const navItems = [
@@ -40,12 +39,7 @@ export function Navbar() {
                 Borrow Now
               </Button>
             </Link>
-            <Button
-              onClick={connected ? disconnect : connect}
-              className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0"
-            >
-              {connected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : "Connect"}
-            </Button>
+            <WalletConnect />
           </div>
         </div>
       </div>

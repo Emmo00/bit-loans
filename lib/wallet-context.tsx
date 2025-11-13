@@ -1,46 +1,27 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { config } from './wagmi-config'
+import { useState, type ReactNode } from "react"
 
-interface WalletContextType {
-  address: string | null
-  connected: boolean
-  connect: () => void
-  disconnect: () => void
-  balance: string
-}
-
-const WalletContext = createContext<WalletContextType | undefined>(undefined)
+const queryClient = new QueryClient()
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null)
-  const [connected, setConnected] = useState(false)
-  const [balance, setBalance] = useState("0.00")
-
-  const connect = () => {
-    // Simulated wallet connection
-    setAddress("0x742d...8E0C")
-    setConnected(true)
-    setBalance("2.5842")
-  }
-
-  const disconnect = () => {
-    setAddress(null)
-    setConnected(false)
-    setBalance("0.00")
-  }
-
   return (
-    <WalletContext.Provider value={{ address, connected, connect, disconnect, balance }}>
-      {children}
-    </WalletContext.Provider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
 
-export function useWallet() {
-  const context = useContext(WalletContext)
-  if (!context) {
-    throw new Error("useWallet must be used within WalletProvider")
-  }
-  return context
-}
+// Re-export wagmi hooks for convenience
+export { 
+  useAccount, 
+  useConnect, 
+  useDisconnect, 
+  useBalance,
+  useConnectors 
+} from 'wagmi'

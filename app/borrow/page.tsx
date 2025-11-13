@@ -1,6 +1,6 @@
 "use client"
 
-import { WalletProvider, useWallet } from "@/lib/wallet-context"
+import { useWallet } from "@/lib/use-wallet"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -129,9 +129,5 @@ function BorrowContent() {
 }
 
 export default function Borrow() {
-  return (
-    <WalletProvider>
-      <BorrowContent />
-    </WalletProvider>
-  )
+  return <BorrowContent />
 }
