@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { readContract, writeContract, waitForTransactionReceipt } from 'wagmi/actions';
 import { config, TARGET_CHAIN } from './wagmi-config';
-import { CONTRACT_ADDRESSES, ERC20_ABI, PRICE_ORACLE_ABI } from './contracts';
+import { CONTRACT_ADDRESSES, ERC20_ABI, PRICE_ORACLE_ABI, fetchProtocolParameters, ProtocolParameters } from './contracts';
 import LendingPoolABI from '../abis/LendingPool.json';
 import CollateralManagerABI from '../abis/CollateralManager.json';
 import { formatWAD } from './formatters';
@@ -42,6 +42,9 @@ interface ProtocolState {
   liquidationThreshold: bigint;
   availableLiquidity: bigint;
   ethPrice: bigint;
+  totalCollateral: bigint;
+  // Dynamic protocol parameters
+  protocolParams: ProtocolParameters;
 }
 
 // Token balances interface
@@ -196,68 +199,63 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const fetchProtocolState = useCallback(async (): Promise<ProtocolState | null> => {
     try {
       const [
+        protocolParams,
         totalSupply,
         totalBorrows,
         borrowRate,
         supplyRate,
         utilization,
-        collateralFactor,
-        liquidationThreshold,
         availableLiquidity,
-        ethPrice
+        ethPrice,
+        totalCollateral
       ] = await Promise.all([
-        readContract(config, {
+        fetchProtocolParameters(),
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'totalSupply'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'totalBorrows'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'borrowRate'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'supplyRate'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'utilization'
         }) as Promise<bigint>,
         
-        readContract(config, {
-          address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
-          abi: CollateralManagerABI,
-          functionName: 'getCollateralFactor'
-        }) as Promise<bigint>,
-        
-        readContract(config, {
-          address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
-          abi: CollateralManagerABI,
-          functionName: 'getLiquidationThreshold'
-        }) as Promise<bigint>,
-        
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'getCash'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.PRICE_ORACLE,
           abi: PRICE_ORACLE_ABI,
           functionName: 'getEthPrice'
+        }) as Promise<bigint>,
+
+        readContractWithChain({
+          address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
+          abi: CollateralManagerABI,
+          functionName: 'totalCollateral'
         }) as Promise<bigint>
       ]);
 
@@ -267,10 +265,12 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         borrowRate,
         supplyRate,
         utilization,
-        collateralFactor,
-        liquidationThreshold,
+        collateralFactor: protocolParams.collateralFactor,
+        liquidationThreshold: protocolParams.liquidationThreshold,
         availableLiquidity,
-        ethPrice
+        ethPrice,
+        totalCollateral,
+        protocolParams
       };
     } catch (err) {
       console.error('Error fetching protocol state:', err);

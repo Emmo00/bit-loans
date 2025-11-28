@@ -277,6 +277,40 @@ export default function DashboardPage() {
                   <div className="text-sm text-muted-foreground">Borrow Rate</div>
                 </div>
               </div>
+
+              {/* Protocol Parameters - Fetched from Contracts */}
+              <div className="mt-6 pt-4 border-t border-border/50">
+                <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Protocol Parameters (Live from Contracts)
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">Collateral Factor</div>
+                    <div className="font-medium">{formatPercentage(protocolState.protocolParams.collateralFactor)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Liquidation Threshold</div>
+                    <div className="font-medium">{formatPercentage(protocolState.protocolParams.liquidationThreshold)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Reserve Factor</div>
+                    <div className="font-medium">{formatPercentage(protocolState.protocolParams.reserveFactor)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Close Factor</div>
+                    <div className="font-medium">{formatPercentage(protocolState.protocolParams.closeFactor)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Liquidation Bonus</div>
+                    <div className="font-medium">{formatPercentage(protocolState.protocolParams.liquidationBonus)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">ETH Price</div>
+                    <div className="font-medium">{formatCurrency(formatWAD(protocolState.ethPrice))} cNGN</div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
