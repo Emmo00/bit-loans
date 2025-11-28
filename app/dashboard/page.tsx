@@ -1,198 +1,347 @@
-"use client"
+'use client';
 
-import { useWallet } from "@/lib/use-wallet"
-import { Navbar } from "@/components/navbar"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import React, { useState } from 'react';
+import { useProtocol } from '@/lib/protocol-context';
+import { formatWAD, formatPercentage, getHealthFactorColor, formatCurrency, convertToAPY } from '@/lib/formatters';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Loader2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { DepositCollateralModal } from '@/components/modals/deposit-collateral-modal';
+import { WithdrawCollateralModal } from '@/components/modals/withdraw-collateral-modal';
+import { BorrowModal } from '@/components/modals/borrow-modal';
+import { RepayModal } from '@/components/modals/repay-modal';
 
-function DashboardContent() {
-  const { connected } = useWallet()
+export default function DashboardPage() {
+  const { isConnected } = useAccount();
+  const { 
+    userPosition, 
+    protocolState, 
+    tokenBalances, 
+    isLoading, 
+    error,
+    refreshUserData 
+  } = useProtocol();
 
-  const activeLoansSummary = {
-    totalBorrowed: "₦15,000",
-    totalOwed: "₦15,310",
-    collateral: "2.5 ETH",
-  }
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
+  const [showRepayModal, setShowRepayModal] = useState(false);
 
-  const activeLoans = [
-    {
-      id: 1,
-      loanId: "LOAN-001",
-      borrowed: "₦10,000",
-      owed: "₦10,206",
-      collateral: "1.5 ETH",
-      status: "Active",
-    },
-    {
-      id: 2,
-      loanId: "LOAN-002",
-      borrowed: "₦5,000",
-      owed: "₦5,104",
-      collateral: "1.0 ETH",
-      status: "Active",
-    },
-  ]
-
-  const loanHistory = [
-    {
-      id: 1,
-      loanId: "LOAN-000",
-      borrowed: "₦8,000",
-      repaid: "₦8,000",
-      status: "Repaid",
-      date: "2025-01-15",
-    },
-    {
-      id: 2,
-      loanId: "LOAN-001",
-      borrowed: "₦5,000",
-      repaid: "₦5,000",
-      status: "Repaid",
-      date: "2025-01-10",
-    },
-  ]
-
-  if (!connected) {
+  if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <Navbar />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Connect Your Wallet</h1>
-          <p className="text-muted-foreground mb-6">Please connect your wallet to view your dashboard</p>
-          <Link href="/">
-            <Button className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0">
-              Go Home
-            </Button>
-          </Link>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <CardContent>
+            <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
+            <p className="text-muted-foreground">
+              Please connect your wallet to access the lending protocol.
+            </p>
+          </CardContent>
+        </Card>
       </div>
-    )
+    );
   }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 text-center border-destructive">
+          <CardContent>
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Error</h2>
+            <p className="text-muted-foreground">{error}</p>
+            <Button onClick={refreshUserData} className="mt-4">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const hasPosition = userPosition && (userPosition.collateralETH > 0n || userPosition.debtBalance > 0n);
+  const isHealthy = userPosition ? userPosition.healthFactor >= BigInt(1e18) : true;
+  const isAtRisk = userPosition ? userPosition.healthFactor < BigInt('1200000000000000000') && userPosition.healthFactor >= BigInt(1e18) : false;
+  
+  const borrowAPY = protocolState ? convertToAPY(protocolState.borrowRate) : 0;
+  const supplyAPY = protocolState ? convertToAPY(protocolState.supplyRate) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <Navbar />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your borrowing activity</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container mx-auto p-6 space-y-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Your Position</h1>
+            <p className="text-muted-foreground">
+              Single lending position with ETH collateral and cNGN borrowing
+            </p>
+          </div>
+          
+          {/* Health Status Badge */}
+          {hasPosition && (
+            <Badge
+              variant={!isHealthy ? "destructive" : isAtRisk ? "secondary" : "default"}
+              className="text-sm"
+            >
+              {!isHealthy ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-1" />
+                  Liquidatable
+                </>
+              ) : isAtRisk ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-1" />
+                  At Risk
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Healthy
+                </>
+              )}
+            </Badge>
+          )}
         </div>
 
-        {/* Summary Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="glass p-8 mb-8 gradient-accent"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Total Borrowed</p>
-              <p className="text-3xl font-bold mb-1">{activeLoansSummary.totalBorrowed}</p>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Total Owed</p>
-              <p className="text-3xl font-bold text-red-500 mb-1">{activeLoansSummary.totalOwed}</p>
-              <p className="text-xs text-muted-foreground">Including interest</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Collateral</p>
-              <p className="text-3xl font-bold mb-1">{activeLoansSummary.collateral}</p>
-              <p className="text-xs text-muted-foreground">Deposited</p>
-            </div>
-          </div>
-        </motion.div>
+        {/* Main Position Overview */}
+        {hasPosition ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Collateral Card */}
+            <Card className="glass">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Collateral Deposited</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(formatWAD(userPosition!.collateralETH))} ETH
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  ≈ {formatCurrency(formatWAD(userPosition!.collateralValue), '$')} cNGN
+                </p>
+              </CardContent>
+            </Card>
 
-        {/* Active Loans */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-bold mb-4">Active Loans</h2>
-          <div className="glass p-6 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 font-semibold">Loan ID</th>
-                  <th className="text-left py-3 px-4 font-semibold">Borrowed</th>
-                  <th className="text-left py-3 px-4 font-semibold">Owed</th>
-                  <th className="text-left py-3 px-4 font-semibold">Collateral</th>
-                  <th className="text-left py-3 px-4 font-semibold">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeLoans.map((loan) => (
-                  <tr key={loan.id} className="border-b border-border/50 hover:bg-white/5 transition-colors">
-                    <td className="py-4 px-4 font-medium">{loan.loanId}</td>
-                    <td className="py-4 px-4">{loan.borrowed}</td>
-                    <td className="py-4 px-4 text-red-500 font-medium">{loan.owed}</td>
-                    <td className="py-4 px-4">{loan.collateral}</td>
-                    <td className="py-4 px-4">
-                      <span className="inline-block px-2 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-medium">
-                        {loan.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Link href={`/repay/${loan.loanId}`}>
-                        <Button size="sm" className="rounded-lg bg-blue-500 hover:bg-blue-600 text-white border-0">
-                          Repay
-                        </Button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
+            {/* Debt Card */}
+            <Card className="glass">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Debt Outstanding</CardTitle>
+                <TrendingDown className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(formatWAD(userPosition!.debtBalance))} cNGN
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Borrow Rate: {borrowAPY.toFixed(2)}% APY
+                </p>
+              </CardContent>
+            </Card>
 
-        {/* Loan History */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <h2 className="text-xl font-bold mb-4">Loan History</h2>
-          <div className="glass p-6 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 font-semibold">Loan ID</th>
-                  <th className="text-left py-3 px-4 font-semibold">Borrowed</th>
-                  <th className="text-left py-3 px-4 font-semibold">Repaid</th>
-                  <th className="text-left py-3 px-4 font-semibold">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loanHistory.map((loan) => (
-                  <tr key={loan.id} className="border-b border-border/50 hover:bg-white/5 transition-colors">
-                    <td className="py-4 px-4 font-medium">{loan.loanId}</td>
-                    <td className="py-4 px-4">{loan.borrowed}</td>
-                    <td className="py-4 px-4">{loan.repaid}</td>
-                    <td className="py-4 px-4">
-                      <span className="inline-block px-2 py-1 rounded-full bg-blue-500/20 text-blue-600 text-xs font-medium">
-                        {loan.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-muted-foreground">{loan.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Health Factor Card */}
+            <Card className="glass">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Health Factor</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${getHealthFactorColor(userPosition!.healthFactor)}`}>
+                  {(Number(userPosition!.healthFactor) / 1e18).toFixed(2)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {userPosition!.healthFactor >= BigInt(1e18) ? 'Safe Position' : 'Liquidation Risk'}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Available to Borrow Card */}
+            <Card className="glass">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Available to Borrow</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(formatWAD(userPosition!.availableToBorrow))} cNGN
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Max: {formatCurrency(formatWAD(userPosition!.maxBorrow))} cNGN
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </motion.div>
-      </main>
+        ) : (
+          /* No Position State */
+          <Card className="glass p-8 text-center">
+            <CardContent>
+              <div className="mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No Active Position</h3>
+                <p className="text-muted-foreground">
+                  Start by depositing ETH collateral or borrowing cNGN directly
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* LTV and Risk Metrics */}
+        {hasPosition && (
+          <Card className="glass">
+            <CardHeader>
+              <CardTitle>Risk Metrics</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Current LTV</span>
+                  <span className="text-sm">{userPosition!.currentLTV.toFixed(2)}%</span>
+                </div>
+                <Progress 
+                  value={userPosition!.currentLTV} 
+                  className="w-full" 
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <div className="text-sm text-muted-foreground">Liquidation Price</div>
+                  <div className="text-lg font-semibold">
+                    {formatCurrency(formatWAD(userPosition!.liquidationPrice), '$')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Borrow Index</div>
+                  <div className="text-lg font-semibold">
+                    {(Number(userPosition!.borrowIndex) / 1e18).toFixed(6)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Protocol Stats */}
+        {protocolState && (
+          <Card className="glass">
+            <CardHeader>
+              <CardTitle>Protocol Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 rounded-lg bg-primary/5">
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(formatWAD(protocolState.totalSupply))} cNGN
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Supplied</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-primary/5">
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(formatWAD(protocolState.totalBorrows))} cNGN
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Borrowed</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-primary/5">
+                  <div className="text-2xl font-bold">
+                    {formatPercentage(protocolState.utilization)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Utilization Rate</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-green-500">
+                    {supplyAPY.toFixed(2)}% APY
+                  </div>
+                  <div className="text-sm text-muted-foreground">Supply Rate</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-orange-500">
+                    {borrowAPY.toFixed(2)}% APY
+                  </div>
+                  <div className="text-sm text-muted-foreground">Borrow Rate</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Button 
+            onClick={() => setShowDepositModal(true)}
+            size="lg"
+            className="glass-button"
+          >
+            Deposit Collateral
+          </Button>
+          
+          <Button 
+            onClick={() => setShowWithdrawModal(true)}
+            size="lg"
+            variant="outline"
+            className="glass-button"
+            disabled={!hasPosition || !isHealthy}
+          >
+            Withdraw Collateral
+          </Button>
+          
+          <Button 
+            onClick={() => setShowBorrowModal(true)}
+            size="lg"
+            className="glass-button"
+            disabled={!isHealthy}
+          >
+            Borrow cNGN
+          </Button>
+          
+          <Button 
+            onClick={() => setShowRepayModal(true)}
+            size="lg"
+            variant="outline"
+            className="glass-button"
+            disabled={!hasPosition || userPosition?.debtBalance === 0n}
+          >
+            Repay Debt
+          </Button>
+        </div>
+
+        {/* Modals */}
+        <DepositCollateralModal 
+          open={showDepositModal} 
+          onOpenChange={setShowDepositModal}
+        />
+        
+        <WithdrawCollateralModal 
+          open={showWithdrawModal} 
+          onOpenChange={setShowWithdrawModal}
+        />
+        
+        <BorrowModal 
+          open={showBorrowModal} 
+          onOpenChange={setShowBorrowModal}
+        />
+        
+        <RepayModal 
+          open={showRepayModal} 
+          onOpenChange={setShowRepayModal}
+        />
+      </div>
     </div>
-  )
-}
-
-export default function Dashboard() {
-  return <DashboardContent />
+  );
 }
