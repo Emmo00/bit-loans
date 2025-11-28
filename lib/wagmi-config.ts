@@ -1,10 +1,10 @@
 import { createConfig, http } from "wagmi";
-import { mainnet, sepolia, localhost } from "wagmi/chains";
+import { baseSepolia, base } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 
 // Configure chains - using mainnet, sepolia, and localhost for development
 export const config = createConfig({
-  chains: [mainnet, sepolia, localhost],
+  chains: [baseSepolia],
   connectors: [
     injected({
       // Configure which wallets to detect
@@ -12,9 +12,7 @@ export const config = createConfig({
     }),
   ],
   transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-    [localhost.id]: http(), // For local development
+    [baseSepolia.id]: http(),
   },
 });
 

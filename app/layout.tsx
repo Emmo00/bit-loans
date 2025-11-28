@@ -15,7 +15,6 @@ const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["20
 export const metadata: Metadata = {
   title: "BitLoans - Decentralized Lending",
   description: "A decentralized lending platform for borrowing and lending crypto assets",
-  generator: "v0.app",
   icons: {
     icon: [
       {
