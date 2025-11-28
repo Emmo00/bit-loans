@@ -6,11 +6,11 @@ import CollateralManagerABI from '../abis/CollateralManager.json';
 
 // Contract addresses - Update these after deployment
 export const CONTRACT_ADDRESSES = {
-  LENDING_POOL: '0x528612f226dDAa9818242b071126fcDE8201CAD0' as Address, // To be set after deployment
-  COLLATERAL_MANAGER: '0x7BdF62bdcd7d3db3513eAb9344dCD344cf8d3FF7' as Address, // To be set after deployment
-  PRICE_ORACLE: '0x43b2A2D97553f1A63Dd4fCE786E3e8827772A3Fb' as Address, // To be set after deployment
-  INTEREST_RATE_MODEL: '0x5897aAECeD11fBd64777D928Aa901b49e037996e' as Address, // To be set after deployment
-  BORROW_ASSET: '0x08b26e305aeCe44DAD7859FB87d698ABc53A2962' as Address, // cNGN token address
+  LENDING_POOL: '0x6c690eE5E2627B6880fCFB99a1949118bdc6f83E' as Address, // To be set after deployment
+  COLLATERAL_MANAGER: '0x71430593319C84679e4EA77ef798F8e389A361cc' as Address, // To be set after deployment
+  PRICE_ORACLE: '0xC7A8699DEF93eF2eC2B5Fcb09A86B3976Df552e7' as Address, // To be set after deployment
+  INTEREST_RATE_MODEL: '0xd1CBD4dff4cF1b27Dca8812D6c172D5196D66D7F' as Address, // To be set after deployment
+  BORROW_ASSET: '0xfa923504bbEeD541B0541e59EbD5B97FCc82E855' as Address, // cNGN token address
 } as const;
 
 // Protocol constants (1e18 = 100%) - Hardcoded fallbacks only
