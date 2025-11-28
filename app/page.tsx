@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Navbar } from "@/components/navbar"
 import Link from "next/link"
 import { ArrowRight, ArrowDown } from "lucide-react"
 import { motion } from "framer-motion"
@@ -28,8 +27,6 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <Navbar />
-
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Hero Section */}
         <motion.div

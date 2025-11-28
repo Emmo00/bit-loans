@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Navbar } from "@/components/navbar";
 import { RepayModal } from "@/components/modals/repay-modal";
 import { useProtocol } from "@/lib/protocol-context";
 import { useAccount } from "wagmi";
@@ -32,7 +31,6 @@ export default function Repay() {
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-md mx-auto text-center">
             <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -49,7 +47,6 @@ export default function Repay() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <div className="animate-pulse space-y-6">
@@ -79,8 +76,6 @@ export default function Repay() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
