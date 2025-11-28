@@ -3,11 +3,19 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { readContract, writeContract, waitForTransactionReceipt } from 'wagmi/actions';
-import { config } from './wagmi-config';
+import { config, TARGET_CHAIN } from './wagmi-config';
 import { CONTRACT_ADDRESSES, ERC20_ABI, PRICE_ORACLE_ABI } from './contracts';
 import LendingPoolABI from '../abis/LendingPool.json';
 import CollateralManagerABI from '../abis/CollateralManager.json';
 import { formatWAD } from './formatters';
+
+// Utility function to ensure all contract reads use the correct chain
+const readContractWithChain = (contractConfig: any) => {
+  return readContract(config, {
+    ...contractConfig,
+    chainId: TARGET_CHAIN.id
+  });
+};
 
 // User position interface
 interface UserPosition {
@@ -103,35 +111,35 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         borrowIndex,
         userBorrowIndex
       ] = await Promise.all([
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
           abi: CollateralManagerABI,
           functionName: 'getUserCollateral',
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
           abi: CollateralManagerABI,
           functionName: 'getCollateralValue',
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'getBorrowBalance',
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'healthFactor',
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContractWithChain({
           address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
           abi: CollateralManagerABI,
           functionName: 'getMaxBorrow',

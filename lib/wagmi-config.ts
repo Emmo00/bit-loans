@@ -1,20 +1,23 @@
 import { createConfig, http } from "wagmi";
-import { baseSepolia, base } from "wagmi/chains";
-import { injected } from "wagmi/connectors";
+import { baseSepolia } from "wagmi/chains";
+import { injected, metaMask } from "wagmi/connectors";
 
-// Configure chains - using mainnet, sepolia, and localhost for development
+// Configure chains - Base Sepolia for testing
 export const config = createConfig({
   chains: [baseSepolia],
   connectors: [
+    metaMask(),
     injected({
-      // Configure which wallets to detect
-      target: "metaMask", // Prioritize MetaMask but will work with any injected wallet
+      target: "metaMask",
     }),
   ],
   transports: {
     [baseSepolia.id]: http(),
   },
 });
+
+// Export the target chain for easy reference
+export const TARGET_CHAIN = baseSepolia;
 
 declare module "wagmi" {
   interface Register {
