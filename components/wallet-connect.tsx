@@ -1,24 +1,28 @@
 "use client"
 
-import { useWallet } from "@/lib/use-wallet"
+import { useAppKit } from "@reown/appkit/react"
+import { useAccount, useDisconnect, useBalance, useChainId, useSwitchChain } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, AlertCircle, RefreshCw } from "lucide-react"
+import { AlertCircle, RefreshCw } from "lucide-react"
 import { useState, useEffect } from "react"
+import { baseSepolia } from "wagmi/chains"
+import { formatEther } from "viem"
+
+const TARGET_CHAIN = baseSepolia
 
 export function WalletConnect() {
-  const { 
-    connected, 
-    connect, 
-    disconnect, 
-    address, 
-    balance, 
-    chain, 
-    isCorrectChain, 
-    switchChain, 
-    targetChain,
-    refetchBalance 
-  } = useWallet()
+  const { open } = useAppKit()
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
+  const chainId = useChainId()
+  const { switchChain } = useSwitchChain()
+  
+  const { data: balance } = useBalance({
+    address,
+    chainId: TARGET_CHAIN.id,
+  })
+  
   const [isClient, setIsClient] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSwitching, setIsSwitching] = useState(false)
@@ -27,20 +31,20 @@ export function WalletConnect() {
     setIsClient(true)
   }, [])
 
-  // Refetch balance when chain changes
-  useEffect(() => {
-    if (connected && isCorrectChain) {
-      refetchBalance()
-    }
-  }, [connected, isCorrectChain, refetchBalance])
+  const isCorrectChain = chainId === TARGET_CHAIN.id
+  const formattedBalance = balance ? Number(formatEther(balance.value)).toFixed(4) : "0.0000"
+  const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ""
 
-  const handleConnect = async () => {
+  const handleSwitchChain = async () => {
     try {
       setError(null)
-      await connect()
+      setIsSwitching(true)
+      await switchChain({ chainId: TARGET_CHAIN.id })
     } catch (err) {
-      setError("Failed to connect wallet. Please make sure MetaMask is installed.")
-      console.error("Wallet connection error:", err)
+      setError(`Failed to switch to ${TARGET_CHAIN.name}`)
+      console.error("Chain switch error:", err)
+    } finally {
+      setIsSwitching(false)
     }
   }
 
@@ -54,19 +58,6 @@ export function WalletConnect() {
     }
   }
 
-  const handleSwitchChain = async () => {
-    try {
-      setError(null)
-      setIsSwitching(true)
-      await switchChain()
-    } catch (err) {
-      setError(`Failed to switch to ${targetChain.name}`)
-      console.error("Chain switch error:", err)
-    } finally {
-      setIsSwitching(false)
-    }
-  }
-
   if (!isClient) {
     return (
       <Button disabled className="rounded-lg">
@@ -75,18 +66,17 @@ export function WalletConnect() {
     )
   }
 
-  if (!connected) {
+  if (!isConnected) {
     return (
       <div className="space-y-2">
         <Button
-          onClick={handleConnect}
+          onClick={() => open()}
           className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0"
         >
-          <Wallet className="w-4 h-4 mr-2" />
           Connect Wallet
         </Button>
         <div className="text-xs text-muted-foreground text-center">
-          Connect to {targetChain.name}
+          Connect to {TARGET_CHAIN.name}
         </div>
         {error && (
           <div className="flex items-center gap-2 text-sm text-red-500">
@@ -101,17 +91,15 @@ export function WalletConnect() {
   return (
     <div className="flex items-center gap-2">
       <div className="text-right hidden sm:block">
-        <div className="text-sm font-medium">{address}</div>
+        <div className="text-sm font-medium">{truncatedAddress}</div>
         <div className="text-xs text-muted-foreground flex items-center gap-1">
-          {balance} ETH
-          {chain && (
-            <Badge 
-              variant={isCorrectChain ? "default" : "destructive"} 
-              className="ml-1 text-xs"
-            >
-              {chain.name}
-            </Badge>
-          )}
+          {formattedBalance} ETH
+          <Badge 
+            variant={isCorrectChain ? "default" : "destructive"} 
+            className="ml-1 text-xs"
+          >
+            {isCorrectChain ? TARGET_CHAIN.name : "Wrong Network"}
+          </Badge>
         </div>
       </div>
       
@@ -128,7 +116,7 @@ export function WalletConnect() {
           ) : (
             <AlertCircle className="w-4 h-4 mr-1" />
           )}
-          Switch to {targetChain.name}
+          Switch to {TARGET_CHAIN.name}
         </Button>
       )}
       

@@ -1,6 +1,7 @@
 import { Address } from 'viem';
 import { readContract } from 'wagmi/actions';
-import { config, TARGET_CHAIN } from './wagmi-config';
+import { wagmiAdapter } from './appkit-config';
+import { baseSepolia } from 'wagmi/chains';
 import LendingPoolABI from '../abis/LendingPool.json';
 import CollateralManagerABI from '../abis/CollateralManager.json';
 
@@ -38,39 +39,39 @@ export const fetchProtocolParameters = async (): Promise<ProtocolParameters> => 
       closeFactor,
       liquidationBonus,
     ] = await Promise.all([
-      readContract(config, {
+      readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
         abi: CollateralManagerABI,
         functionName: 'getCollateralFactor',
-        chainId: TARGET_CHAIN.id,
+        chainId: baseSepolia.id,
       }) as Promise<bigint>,
       
-      readContract(config, {
+      readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
         abi: CollateralManagerABI,
         functionName: 'getLiquidationThreshold',
-        chainId: TARGET_CHAIN.id,
+        chainId: baseSepolia.id,
       }) as Promise<bigint>,
       
-      readContract(config, {
+      readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.LENDING_POOL,
         abi: LendingPoolABI,
         functionName: 'reserveFactor',
-        chainId: TARGET_CHAIN.id,
+        chainId: baseSepolia.id,
       }) as Promise<bigint>,
       
-      readContract(config, {
+      readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.LENDING_POOL,
         abi: LendingPoolABI,
         functionName: 'closeFactor',
-        chainId: TARGET_CHAIN.id,
+        chainId: baseSepolia.id,
       }) as Promise<bigint>,
       
-      readContract(config, {
+      readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.LENDING_POOL,
         abi: LendingPoolABI,
         functionName: 'liquidationBonus',
-        chainId: TARGET_CHAIN.id,
+        chainId: baseSepolia.id,
       }) as Promise<bigint>,
     ]);
 

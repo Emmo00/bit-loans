@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { readContract, writeContract, waitForTransactionReceipt } from 'wagmi/actions';
-import { config, TARGET_CHAIN } from './wagmi-config';
+import { wagmiAdapter } from './appkit-config';
+import { baseSepolia } from 'wagmi/chains';
 import { CONTRACT_ADDRESSES, ERC20_ABI, PRICE_ORACLE_ABI, fetchProtocolParameters, ProtocolParameters } from './contracts';
 import LendingPoolABI from '../abis/LendingPool.json';
 import CollateralManagerABI from '../abis/CollateralManager.json';
@@ -11,9 +12,9 @@ import { formatWAD } from './formatters';
 
 // Utility function to ensure all contract reads use the correct chain
 const readContractWithChain = (contractConfig: any) => {
-  return readContract(config, {
+  return readContract(wagmiAdapter.wagmiConfig, {
     ...contractConfig,
-    chainId: TARGET_CHAIN.id
+    chainId: baseSepolia.id
   });
 };
 
@@ -149,13 +150,13 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContract(wagmiAdapter.wagmiConfig, {
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'borrowIndex'
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContract(wagmiAdapter.wagmiConfig, {
           address: CONTRACT_ADDRESSES.LENDING_POOL,
           abi: LendingPoolABI,
           functionName: 'borrowerIndex',
@@ -168,7 +169,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         (Number(debtBalance) / Number(collateralValue)) * 100 : 0;
       
       // Calculate liquidation price
-      const liquidationThreshold = await readContract(config, {
+      const liquidationThreshold = await readContract(wagmiAdapter.wagmiConfig, {
         address: CONTRACT_ADDRESSES.COLLATERAL_MANAGER,
         abi: CollateralManagerABI,
         functionName: 'getLiquidationThreshold'
@@ -284,14 +285,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       const [cngn, cngnAllowance, eth] = await Promise.all([
-        readContract(config, {
+        readContract(wagmiAdapter.wagmiConfig, {
           address: CONTRACT_ADDRESSES.BORROW_ASSET,
           abi: ERC20_ABI,
           functionName: 'balanceOf',
           args: [address]
         }) as Promise<bigint>,
         
-        readContract(config, {
+        readContract(wagmiAdapter.wagmiConfig, {
           address: CONTRACT_ADDRESSES.BORROW_ASSET,
           abi: ERC20_ABI,
           functionName: 'allowance',
@@ -347,14 +348,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const depositCollateral = async (amount: bigint): Promise<string> => {
     if (!walletClient) throw new Error('Wallet not connected');
     
-    const hash = await writeContract(config, {
+    const hash = await writeContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'depositCollateral',
       value: amount
     });
     
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(wagmiAdapter.wagmiConfig, { hash });
     await refreshUserData();
     return hash;
   };
@@ -362,14 +363,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const withdrawCollateral = async (amount: bigint): Promise<string> => {
     if (!walletClient || !address) throw new Error('Wallet not connected');
     
-    const hash = await writeContract(config, {
+    const hash = await writeContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'withdrawCollateral',
       args: [amount, address]
     });
     
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(wagmiAdapter.wagmiConfig, { hash });
     await refreshUserData();
     return hash;
   };
@@ -377,14 +378,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const borrow = async (amount: bigint): Promise<string> => {
     if (!walletClient || !address) throw new Error('Wallet not connected');
     
-    const hash = await writeContract(config, {
+    const hash = await writeContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'borrow',
       args: [amount, address]
     });
     
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(wagmiAdapter.wagmiConfig, { hash });
     await refreshUserData();
     return hash;
   };
@@ -392,14 +393,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const repay = async (amount: bigint): Promise<string> => {
     if (!walletClient || !address) throw new Error('Wallet not connected');
     
-    const hash = await writeContract(config, {
+    const hash = await writeContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'repay',
       args: [address, amount]
     });
     
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(wagmiAdapter.wagmiConfig, { hash });
     await refreshUserData();
     return hash;
   };
@@ -407,14 +408,14 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const approveCNGN = async (amount: bigint): Promise<string> => {
     if (!walletClient) throw new Error('Wallet not connected');
     
-    const hash = await writeContract(config, {
+    const hash = await writeContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.BORROW_ASSET,
       abi: ERC20_ABI,
       functionName: 'approve',
       args: [CONTRACT_ADDRESSES.LENDING_POOL, amount]
     });
     
-    await waitForTransactionReceipt(config, { hash });
+    await waitForTransactionReceipt(wagmiAdapter.wagmiConfig, { hash });
     await refreshUserData();
     return hash;
   };
@@ -433,7 +434,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const calculateHealthFactorAfterBorrow = async (borrowAmount: bigint): Promise<bigint> => {
     if (!address) return 0n;
     
-    return readContract(config, {
+    return readContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'healthFactorAfterBorrow',
@@ -444,7 +445,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const calculateHealthFactorAfterWithdraw = async (withdrawAmount: bigint): Promise<bigint> => {
     if (!address) return 0n;
     
-    return readContract(config, {
+    return readContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
       abi: LendingPoolABI,
       functionName: 'healthFactorAfterWithdrawCollateral',

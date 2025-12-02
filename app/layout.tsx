@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 
 import { Analytics } from "@vercel/analytics/next"
-import { WalletProvider } from "@/lib/wallet-context"
+import { AppKitProvider } from "@/lib/appkit-provider"
 import { ProtocolProvider } from "@/lib/protocol-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/navbar"
@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <WalletProvider>
+        <AppKitProvider>
           <ProtocolProvider>
             <ThemeProvider
               attribute="class"
@@ -59,7 +59,7 @@ export default function RootLayout({
               <Toaster richColors position="top-right" />
             </ThemeProvider>
           </ProtocolProvider>
-        </WalletProvider>
+        </AppKitProvider>
         <Analytics />
       </body>
     </html>
