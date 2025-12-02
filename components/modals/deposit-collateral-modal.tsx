@@ -33,20 +33,20 @@ export function DepositCollateralModal({ open, onOpenChange }: DepositCollateral
   const [error, setError] = useState('');
 
   // Calculate projected values
-  const depositAmount = isValidAmount(amount) ? parseWAD(amount) : 0n;
-  const currentCollateral = userPosition?.collateralETH || 0n;
+  const depositAmount = isValidAmount(amount) ? parseWAD(amount) : BigInt(0);
+  const currentCollateral = userPosition?.collateralETH || BigInt(0);
   const newCollateral = currentCollateral + depositAmount;
   
-  const ethPrice = protocolState?.ethPrice || 0n;
+  const ethPrice = protocolState?.ethPrice || BigInt(0);
   const newCollateralValue = newCollateral * ethPrice / BigInt(1e18);
-  const collateralFactor = protocolState?.collateralFactor || 0n;
+  const collateralFactor = protocolState?.collateralFactor || BigInt(0);
   const newMaxBorrow = newCollateralValue * collateralFactor / BigInt(1e18);
-  const currentDebt = userPosition?.debtBalance || 0n;
-  const newAvailableBorrow = newMaxBorrow > currentDebt ? newMaxBorrow - currentDebt : 0n;
+  const currentDebt = userPosition?.debtBalance || BigInt(0);
+  const newAvailableBorrow = newMaxBorrow > currentDebt ? newMaxBorrow - currentDebt : BigInt(0);
 
   // Validation
-  const userEthBalance = tokenBalances?.eth || 0n;
-  const isAmountValid = isValidAmount(amount) && depositAmount > 0n && depositAmount <= userEthBalance;
+  const userEthBalance = tokenBalances?.eth || BigInt(0);
+  const isAmountValid = isValidAmount(amount) && depositAmount > BigInt(0) && depositAmount <= userEthBalance;
   const isFormValid = isAmountValid && !isDepositing;
 
   const handleDeposit = async () => {
@@ -76,10 +76,10 @@ export function DepositCollateralModal({ open, onOpenChange }: DepositCollateral
   };
 
   const handleMaxClick = () => {
-    if (userEthBalance > 0n) {
+    if (userEthBalance > BigInt(0)) {
       // Leave small amount for gas
       const gasBuffer = parseWAD('0.001'); // 0.001 ETH for gas
-      const maxAmount = userEthBalance > gasBuffer ? userEthBalance - gasBuffer : 0n;
+      const maxAmount = userEthBalance > gasBuffer ? userEthBalance - gasBuffer : BigInt(0);
       setAmount(formatWAD(maxAmount));
     }
   };
@@ -118,7 +118,7 @@ export function DepositCollateralModal({ open, onOpenChange }: DepositCollateral
           </div>
 
           {/* Projection Card */}
-          {isValidAmount(amount) && depositAmount > 0n && (
+          {isValidAmount(amount) && depositAmount > BigInt(0) && (
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
@@ -143,7 +143,7 @@ export function DepositCollateralModal({ open, onOpenChange }: DepositCollateral
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Available to Borrow:</span>
                     <span className="text-green-600 font-medium">
-                      +{formatCurrency(formatWAD(newAvailableBorrow - (userPosition?.availableToBorrow || 0n)))} cNGN
+                      +{formatCurrency(formatWAD(newAvailableBorrow - (userPosition?.availableToBorrow || BigInt(0))))} cNGN
                     </span>
                   </div>
                 </div>

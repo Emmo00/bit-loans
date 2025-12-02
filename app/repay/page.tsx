@@ -64,9 +64,9 @@ export default function Repay() {
     );
   }
 
-  const hasDebt = userPosition && userPosition.debt > 0n;
-  const repayAmountBN = repayAmount ? parseEther(repayAmount) : 0n;
-  const maxRepayAmount = userPosition?.debt || 0n;
+  const hasDebt = userPosition && userPosition.debt > BigInt(0);
+  const repayAmountBN = repayAmount ? parseEther(repayAmount) : BigInt(0);
+  const maxRepayAmount = userPosition?.debt || BigInt(0);
 
   // Helper functions for validation
   const isValidAmount = (amount: string) => {
@@ -115,7 +115,7 @@ export default function Repay() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {formatCurrency(formatWAD(userPosition?.debt || 0n))} cNGN
+                      {formatCurrency(formatWAD(userPosition?.debt || BigInt(0)))} cNGN
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Principal amount borrowed
@@ -130,7 +130,7 @@ export default function Repay() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {formatCurrency(formatWAD(userPosition?.collateral || 0n))} ETH
+                      {formatCurrency(formatWAD(userPosition?.collateral || BigInt(0)))} ETH
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Securing your loan
@@ -151,16 +151,16 @@ export default function Repay() {
                       {userPosition && (
                         <Badge 
                           variant={
-                            userPosition.healthFactor >= 200n 
+                            userPosition.healthFactor >= 20BigInt(0) 
                               ? "default" 
-                              : userPosition.healthFactor >= 110n 
+                              : userPosition.healthFactor >= 11BigInt(0) 
                               ? "secondary" 
                               : "destructive"
                           }
                         >
-                          {userPosition.healthFactor >= 200n 
+                          {userPosition.healthFactor >= 20BigInt(0) 
                             ? "Healthy" 
-                            : userPosition.healthFactor >= 110n 
+                            : userPosition.healthFactor >= 11BigInt(0) 
                             ? "Moderate Risk" 
                             : "High Risk"}
                         </Badge>
@@ -195,7 +195,7 @@ export default function Repay() {
                       <Button 
                         variant="outline" 
                         onClick={() => setRepayAmount(formatWAD(maxRepayAmount))}
-                        disabled={maxRepayAmount === 0n}
+                        disabled={maxRepayAmount === BigInt(0)}
                       >
                         Max
                       </Button>
@@ -206,7 +206,7 @@ export default function Repay() {
                   </div>
 
                   {/* Repayment Impact */}
-                  {isValidAmount(repayAmount) && repayAmountBN > 0n && (
+                  {isValidAmount(repayAmount) && repayAmountBN > BigInt(0) && (
                     <Card className="bg-green-500/10 border-green-500/20">
                       <CardContent className="pt-6">
                         <div className="space-y-3">
@@ -236,7 +236,7 @@ export default function Repay() {
                   )}
 
                   {/* Warning for partial repayment */}
-                  {isValidAmount(repayAmount) && repayAmountBN > 0n && repayAmountBN < maxRepayAmount && (
+                  {isValidAmount(repayAmount) && repayAmountBN > BigInt(0) && repayAmountBN < maxRepayAmount && (
                     <Card className="border-orange-200">
                       <CardContent className="pt-6">
                         <div className="flex items-start space-x-2">
@@ -255,7 +255,7 @@ export default function Repay() {
 
                   <Button
                     onClick={() => setShowRepayModal(true)}
-                    disabled={!isValidAmount(repayAmount) || repayAmountBN === 0n || repayAmountBN > maxRepayAmount}
+                    disabled={!isValidAmount(repayAmount) || repayAmountBN === BigInt(0) || repayAmountBN > maxRepayAmount}
                     className="w-full"
                     size="lg"
                   >

@@ -164,8 +164,8 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }) as Promise<bigint>
       ]);
 
-      const availableToBorrow = maxBorrow > debtBalance ? maxBorrow - debtBalance : 0n;
-      const currentLTV = collateralValue > 0n ? 
+      const availableToBorrow = maxBorrow > debtBalance ? maxBorrow - debtBalance : BigInt(0);
+      const currentLTV = collateralValue > BigInt(0) ? 
         (Number(debtBalance) / Number(collateralValue)) * 100 : 0;
       
       // Calculate liquidation price
@@ -175,8 +175,8 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         functionName: 'getLiquidationThreshold'
       }) as bigint;
 
-      const liquidationPrice = collateralETH > 0n ? 
-        (debtBalance * BigInt(1e18)) / (collateralETH * liquidationThreshold / BigInt(1e18)) : 0n;
+      const liquidationPrice = collateralETH > BigInt(0) ? 
+        (debtBalance * BigInt(1e18)) / (collateralETH * liquidationThreshold / BigInt(1e18)) : BigInt(0);
 
       return {
         collateralETH,
@@ -299,7 +299,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           args: [address, CONTRACT_ADDRESSES.LENDING_POOL]
         }) as Promise<bigint>,
         
-        publicClient?.getBalance({ address }) || 0n
+        publicClient?.getBalance({ address }) || BigInt(0)
       ]);
 
       return { cngn, cngnAllowance, eth };
@@ -422,7 +422,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Calculation functions
   const calculateRequiredCollateral = async (borrowAmount: bigint): Promise<bigint> => {
-    if (!protocolState) return 0n;
+    if (!protocolState) return BigInt(0);
     
     // Required collateral = borrowAmount / (ethPrice * collateralFactor)
     const requiredCollateral = (borrowAmount * BigInt(1e18)) / 
@@ -432,7 +432,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const calculateHealthFactorAfterBorrow = async (borrowAmount: bigint): Promise<bigint> => {
-    if (!address) return 0n;
+    if (!address) return BigInt(0);
     
     return readContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,
@@ -443,7 +443,7 @@ export const ProtocolProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const calculateHealthFactorAfterWithdraw = async (withdrawAmount: bigint): Promise<bigint> => {
-    if (!address) return 0n;
+    if (!address) return BigInt(0);
     
     return readContract(wagmiAdapter.wagmiConfig, {
       address: CONTRACT_ADDRESSES.LENDING_POOL,

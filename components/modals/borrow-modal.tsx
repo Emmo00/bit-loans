@@ -35,44 +35,44 @@ export function BorrowModal({ open, onOpenChange }: BorrowModalProps) {
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
   const [error, setError] = useState('');
-  const [requiredCollateral, setRequiredCollateral] = useState<bigint>(0n);
+  const [requiredCollateral, setRequiredCollateral] = useState<bigint>(BigInt(0));
   const [projectedHealthFactor, setProjectedHealthFactor] = useState<bigint | null>(null);
   const [showCollateralStep, setShowCollateralStep] = useState(false);
 
   // Calculate values
-  const borrowAmountBN = isValidAmount(borrowAmount) ? parseWAD(borrowAmount) : 0n;
-  const collateralAmountBN = isValidAmount(collateralAmount) ? parseWAD(collateralAmount) : 0n;
-  const currentCollateral = userPosition?.collateralETH || 0n;
-  const availableToBorrow = userPosition?.availableToBorrow || 0n;
-  const userEthBalance = tokenBalances?.eth || 0n;
+  const borrowAmountBN = isValidAmount(borrowAmount) ? parseWAD(borrowAmount) : BigInt(0);
+  const collateralAmountBN = isValidAmount(collateralAmount) ? parseWAD(collateralAmount) : BigInt(0);
+  const currentCollateral = userPosition?.collateralETH || BigInt(0);
+  const availableToBorrow = userPosition?.availableToBorrow || BigInt(0);
+  const userEthBalance = tokenBalances?.eth || BigInt(0);
 
   // Check if user needs more collateral
   React.useEffect(() => {
-    if (isValidAmount(borrowAmount) && borrowAmountBN > 0n) {
+    if (isValidAmount(borrowAmount) && borrowAmountBN > BigInt(0)) {
       calculateRequiredCollateral(borrowAmountBN)
         .then((required) => {
           setRequiredCollateral(required);
-          const additionalNeeded = required > currentCollateral ? required - currentCollateral : 0n;
-          setShowCollateralStep(additionalNeeded > 0n);
-          if (additionalNeeded > 0n) {
+          const additionalNeeded = required > currentCollateral ? required - currentCollateral : BigInt(0);
+          setShowCollateralStep(additionalNeeded > BigInt(0));
+          if (additionalNeeded > BigInt(0)) {
             setCollateralAmount(formatWAD(additionalNeeded));
           }
         })
-        .catch(() => setRequiredCollateral(0n));
+        .catch(() => setRequiredCollateral(BigInt(0)));
         
       calculateHealthFactorAfterBorrow(borrowAmountBN)
         .then(setProjectedHealthFactor)
         .catch(() => setProjectedHealthFactor(null));
     } else {
-      setRequiredCollateral(0n);
+      setRequiredCollateral(BigInt(0));
       setProjectedHealthFactor(null);
       setShowCollateralStep(false);
     }
   }, [borrowAmountBN, currentCollateral, calculateRequiredCollateral, calculateHealthFactorAfterBorrow]);
 
   // Validation
-  const isBorrowAmountValid = isValidAmount(borrowAmount) && borrowAmountBN > 0n;
-  const isCollateralAmountValid = !showCollateralStep || (isValidAmount(collateralAmount) && collateralAmountBN > 0n && collateralAmountBN <= userEthBalance);
+  const isBorrowAmountValid = isValidAmount(borrowAmount) && borrowAmountBN > BigInt(0);
+  const isCollateralAmountValid = !showCollateralStep || (isValidAmount(collateralAmount) && collateralAmountBN > BigInt(0) && collateralAmountBN <= userEthBalance);
   const canBorrowDirectly = isBorrowAmountValid && borrowAmountBN <= availableToBorrow;
   const wouldBeUnsafe = projectedHealthFactor !== null && projectedHealthFactor < BigInt(1e18);
   
@@ -83,7 +83,7 @@ export function BorrowModal({ open, onOpenChange }: BorrowModalProps) {
 
     try {
       // Step 1: Deposit collateral if needed
-      if (showCollateralStep && collateralAmountBN > 0n) {
+      if (showCollateralStep && collateralAmountBN > BigInt(0)) {
         setIsDepositing(true);
         setError('');
         

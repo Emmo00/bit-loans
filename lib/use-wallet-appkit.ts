@@ -45,7 +45,7 @@ export function useWallet() {
     
     // Balance
     balance: formattedBalance,
-    balanceRaw: balance?.value || 0n,
+    balanceRaw: balance?.value || BigInt(0),
     
     // Actions
     connect,

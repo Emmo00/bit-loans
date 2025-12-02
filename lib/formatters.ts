@@ -39,7 +39,7 @@ export const calculateLiquidationPrice = (
   borrowAmount: bigint,
   liquidationThreshold: bigint
 ): bigint => {
-  if (collateralAmount === 0n) return 0n;
+  if (collateralAmount === BigInt(0)) return BigInt(0);
   return (borrowAmount * PROTOCOL_PARAMS.SCALE) / (collateralAmount * liquidationThreshold / PROTOCOL_PARAMS.SCALE);
 };
 
@@ -64,9 +64,9 @@ export const safeBigInt = (value: any): bigint => {
     if (typeof value === 'bigint') return value;
     if (typeof value === 'string' && value !== '') return BigInt(value);
     if (typeof value === 'number') return BigInt(Math.floor(value));
-    return 0n;
+    return BigInt(0);
   } catch {
-    return 0n;
+    return BigInt(0);
   }
 };
 
@@ -83,7 +83,7 @@ export const isValidAmount = (amount: string): boolean => {
 
 // Calculate LTV (Loan-to-Value ratio)
 export const calculateLTV = (borrowValue: bigint, collateralValue: bigint): number => {
-  if (collateralValue === 0n) return 0;
+  if (collateralValue === BigInt(0)) return 0;
   return (Number(borrowValue) / Number(collateralValue)) * 100;
 };
 

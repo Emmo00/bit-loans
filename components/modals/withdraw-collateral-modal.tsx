@@ -33,23 +33,23 @@ export function WithdrawCollateralModal({ open, onOpenChange }: WithdrawCollater
   const [projectedHealthFactor, setProjectedHealthFactor] = useState<bigint | null>(null);
 
   // Calculate projected values
-  const withdrawAmount = isValidAmount(amount) ? parseWAD(amount) : 0n;
-  const currentCollateral = userPosition?.collateralETH || 0n;
-  const newCollateral = currentCollateral > withdrawAmount ? currentCollateral - withdrawAmount : 0n;
+  const withdrawAmount = isValidAmount(amount) ? parseWAD(amount) : BigInt(0);
+  const currentCollateral = userPosition?.collateralETH || BigInt(0);
+  const newCollateral = currentCollateral > withdrawAmount ? currentCollateral - withdrawAmount : BigInt(0);
   
-  const ethPrice = protocolState?.ethPrice || 0n;
+  const ethPrice = protocolState?.ethPrice || BigInt(0);
   const newCollateralValue = newCollateral * ethPrice / BigInt(1e18);
-  const collateralFactor = protocolState?.collateralFactor || 0n;
+  const collateralFactor = protocolState?.collateralFactor || BigInt(0);
   const newMaxBorrow = newCollateralValue * collateralFactor / BigInt(1e18);
-  const currentDebt = userPosition?.debtBalance || 0n;
-  const newAvailableBorrow = newMaxBorrow > currentDebt ? newMaxBorrow - currentDebt : 0n;
+  const currentDebt = userPosition?.debtBalance || BigInt(0);
+  const newAvailableBorrow = newMaxBorrow > currentDebt ? newMaxBorrow - currentDebt : BigInt(0);
 
   // Validation
-  const isAmountValid = isValidAmount(amount) && withdrawAmount > 0n && withdrawAmount <= currentCollateral;
+  const isAmountValid = isValidAmount(amount) && withdrawAmount > BigInt(0) && withdrawAmount <= currentCollateral;
   
   // Check health factor
   React.useEffect(() => {
-    if (isAmountValid && withdrawAmount > 0n) {
+    if (isAmountValid && withdrawAmount > BigInt(0)) {
       calculateHealthFactorAfterWithdraw(withdrawAmount)
         .then(setProjectedHealthFactor)
         .catch(() => setProjectedHealthFactor(null));
@@ -88,7 +88,7 @@ export function WithdrawCollateralModal({ open, onOpenChange }: WithdrawCollater
   };
 
   const handleMaxSafeClick = () => {
-    if (!userPosition || currentDebt === 0n) {
+    if (!userPosition || currentDebt === BigInt(0)) {
       // If no debt, can withdraw all
       setAmount(formatWAD(currentCollateral));
       return;
@@ -102,7 +102,7 @@ export function WithdrawCollateralModal({ open, onOpenChange }: WithdrawCollater
     const requiredCollateralValue = (currentDebt * safeThreshold) / liquidationThreshold;
     const requiredCollateral = (requiredCollateralValue * BigInt(1e18)) / ethPrice;
     
-    const maxWithdraw = currentCollateral > requiredCollateral ? currentCollateral - requiredCollateral : 0n;
+    const maxWithdraw = currentCollateral > requiredCollateral ? currentCollateral - requiredCollateral : BigInt(0);
     setAmount(formatWAD(maxWithdraw));
   };
 
@@ -140,7 +140,7 @@ export function WithdrawCollateralModal({ open, onOpenChange }: WithdrawCollater
           </div>
 
           {/* Projection Card */}
-          {isValidAmount(amount) && withdrawAmount > 0n && (
+          {isValidAmount(amount) && withdrawAmount > BigInt(0) && (
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
@@ -158,7 +158,7 @@ export function WithdrawCollateralModal({ open, onOpenChange }: WithdrawCollater
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Available to Borrow:</span>
-                    <span className={newAvailableBorrow < (userPosition?.availableToBorrow || 0n) ? "text-red-600" : "text-green-600"}>
+                    <span className={newAvailableBorrow < (userPosition?.availableToBorrow || BigInt(0)) ? "text-red-600" : "text-green-600"}>
                       {formatCurrency(formatWAD(newAvailableBorrow))} cNGN
                     </span>
                   </div>

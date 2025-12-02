@@ -24,7 +24,7 @@ export default function BorrowPage() {
 
   const [borrowAmount, setBorrowAmount] = useState('');
   const [showBorrowModal, setShowBorrowModal] = useState(false);
-  const [requiredCollateral, setRequiredCollateral] = useState<bigint>(0n);
+  const [requiredCollateral, setRequiredCollateral] = useState<bigint>(BigInt(0));
 
   // Calculate required collateral when borrow amount changes
   React.useEffect(() => {
@@ -32,22 +32,22 @@ export default function BorrowPage() {
       const amount = parseWAD(borrowAmount);
       calculateRequiredCollateral(amount)
         .then(setRequiredCollateral)
-        .catch(() => setRequiredCollateral(0n));
-    } else {
-      setRequiredCollateral(0n);
-    }
-  }, [borrowAmount, calculateRequiredCollateral]);
+        .catch(() => setRequiredCollateral(BigInt(0)));
+        } else {
+      setRequiredCollateral(BigInt(0));
+        }
+      }, [borrowAmount, calculateRequiredCollateral]);
 
-  // Calculate values
-  const borrowAmountBN = isValidAmount(borrowAmount) ? parseWAD(borrowAmount) : 0n;
-  const currentCollateral = userPosition?.collateralETH || 0n;
-  const availableToBorrow = userPosition?.availableToBorrow || 0n;
-  const ethPrice = protocolState?.ethPrice || 0n;
-  const borrowRate = protocolState?.borrowRate || 0n;
-  const borrowAPY = convertToAPY(borrowRate);
+      // Calculate values
+      const borrowAmountBN = isValidAmount(borrowAmount) ? parseWAD(borrowAmount) : BigInt(0);
+      const currentCollateral = userPosition?.collateralETH || BigInt(0);
+      const availableToBorrow = userPosition?.availableToBorrow || BigInt(0);
+      const ethPrice = protocolState?.ethPrice || BigInt(0);
+      const borrowRate = protocolState?.borrowRate || BigInt(0);
+      const borrowAPY = convertToAPY(borrowRate);
 
-  const needsCollateral = requiredCollateral > currentCollateral;
-  const additionalCollateralNeeded = needsCollateral ? requiredCollateral - currentCollateral : 0n;
+      const needsCollateral = requiredCollateral > currentCollateral;
+      const additionalCollateralNeeded = needsCollateral ? requiredCollateral - currentCollateral : BigInt(0);
 
   if (!isConnected) {
     return (
@@ -144,7 +144,7 @@ export default function BorrowPage() {
             </div>
 
             {/* Calculation Display */}
-            {isValidAmount(borrowAmount) && borrowAmountBN > 0n && (
+            {isValidAmount(borrowAmount) && borrowAmountBN > BigInt(0) && (
               <Card className="bg-primary/5 border-primary/20">
                 <CardContent className="pt-6">
                   <div className="space-y-3">
@@ -180,7 +180,7 @@ export default function BorrowPage() {
             )}
 
             {/* Status Messages */}
-            {needsCollateral && borrowAmountBN > 0n && (
+            {needsCollateral && borrowAmountBN > BigInt(0) && (
               <Card className="border-orange-200">
                 <CardContent className="pt-6">
                   <div className="flex items-start space-x-2">
@@ -198,7 +198,7 @@ export default function BorrowPage() {
 
             <Button
               onClick={() => setShowBorrowModal(true)}
-              disabled={!isValidAmount(borrowAmount) || borrowAmountBN === 0n}
+              disabled={!isValidAmount(borrowAmount) || borrowAmountBN === BigInt(0)}
               className="w-full"
               size="lg"
             >

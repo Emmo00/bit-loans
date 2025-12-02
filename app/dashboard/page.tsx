@@ -70,7 +70,7 @@ export default function DashboardPage() {
     );
   }
 
-  const hasPosition = userPosition && (userPosition.collateralETH > 0n || userPosition.debtBalance > 0n);
+  const hasPosition = userPosition && (userPosition.collateralETH > BigInt(0) || userPosition.debtBalance > BigInt(0));
   const isHealthy = userPosition ? userPosition.healthFactor >= BigInt(1e18) : true;
   const isAtRisk = userPosition ? userPosition.healthFactor < BigInt('1200000000000000000') && userPosition.healthFactor >= BigInt(1e18) : false;
   
@@ -349,7 +349,7 @@ export default function DashboardPage() {
             size="lg"
             variant="outline"
             className="glass-button"
-            disabled={!hasPosition || userPosition?.debtBalance === 0n}
+            disabled={!hasPosition || userPosition?.debtBalance === BigInt(0)}
           >
             Repay Debt
           </Button>

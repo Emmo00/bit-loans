@@ -35,33 +35,33 @@ export function RepayModal({ open, onOpenChange }: RepayModalProps) {
   const [needsApproval, setNeedsApproval] = useState(false);
 
   // Calculate values
-  const repayAmount = isValidAmount(amount) ? parseWAD(amount) : 0n;
-  const currentDebt = userPosition?.debtBalance || 0n;
-  const cngnBalance = tokenBalances?.cngn || 0n;
-  const cngnAllowance = tokenBalances?.cngnAllowance || 0n;
+  const repayAmount = isValidAmount(amount) ? parseWAD(amount) : BigInt(0);
+  const currentDebt = userPosition?.debtBalance || BigInt(0);
+  const cngnBalance = tokenBalances?.cngn || BigInt(0);
+  const cngnAllowance = tokenBalances?.cngnAllowance || BigInt(0);
   
-  const newDebt = currentDebt > repayAmount ? currentDebt - repayAmount : 0n;
-  const currentCollateral = userPosition?.collateralETH || 0n;
-  const ethPrice = protocolState?.ethPrice || 0n;
+  const newDebt = currentDebt > repayAmount ? currentDebt - repayAmount : BigInt(0);
+  const currentCollateral = userPosition?.collateralETH || BigInt(0);
+  const ethPrice = protocolState?.ethPrice || BigInt(0);
   const collateralValue = currentCollateral * ethPrice / BigInt(1e18);
   
   // Calculate collateral that could be released
-  const collateralFactor = protocolState?.collateralFactor || 0n;
-  const newRequiredCollateralValue = newDebt > 0n ? (newDebt * BigInt(1e18)) / collateralFactor : 0n;
-  const newRequiredCollateral = newRequiredCollateralValue > 0n ? (newRequiredCollateralValue * BigInt(1e18)) / ethPrice : 0n;
-  const releasableCollateral = currentCollateral > newRequiredCollateral ? currentCollateral - newRequiredCollateral : 0n;
+  const collateralFactor = protocolState?.collateralFactor || BigInt(0);
+  const newRequiredCollateralValue = newDebt > BigInt(0) ? (newDebt * BigInt(1e18)) / collateralFactor : BigInt(0);
+  const newRequiredCollateral = newRequiredCollateralValue > BigInt(0) ? (newRequiredCollateralValue * BigInt(1e18)) / ethPrice : BigInt(0);
+  const releasableCollateral = currentCollateral > newRequiredCollateral ? currentCollateral - newRequiredCollateral : BigInt(0);
 
   // Check if approval is needed
   React.useEffect(() => {
-    setNeedsApproval(repayAmount > 0n && repayAmount > cngnAllowance);
+    setNeedsApproval(repayAmount > BigInt(0) && repayAmount > cngnAllowance);
   }, [repayAmount, cngnAllowance]);
 
   // Validation
-  const isAmountValid = isValidAmount(amount) && repayAmount > 0n && repayAmount <= currentDebt && repayAmount <= cngnBalance;
+  const isAmountValid = isValidAmount(amount) && repayAmount > BigInt(0) && repayAmount <= currentDebt && repayAmount <= cngnBalance;
   const isFormValid = isAmountValid && !isApproving && !isRepaying;
 
   const handleApprove = async () => {
-    if (!address || repayAmount === 0n) return;
+    if (!address || repayAmount === BigInt(0)) return;
 
     setIsApproving(true);
     setError('');
@@ -125,7 +125,7 @@ export function RepayModal({ open, onOpenChange }: RepayModalProps) {
   };
 
   const handlePercentageClick = (percentage: number) => {
-    const percentageAmount = (currentDebt * BigInt(percentage)) / 100n;
+    const percentageAmount = (currentDebt * BigInt(percentage)) / 10BigInt(0);
     const maxRepay = percentageAmount < cngnBalance ? percentageAmount : cngnBalance;
     setAmount(formatWAD(maxRepay));
   };
@@ -219,7 +219,7 @@ export function RepayModal({ open, onOpenChange }: RepayModalProps) {
           </div>
 
           {/* Projection Card */}
-          {isValidAmount(amount) && repayAmount > 0n && (
+          {isValidAmount(amount) && repayAmount > BigInt(0) && (
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
@@ -233,13 +233,13 @@ export function RepayModal({ open, onOpenChange }: RepayModalProps) {
                   </div>
                   <div className="flex justify-between text-sm font-medium border-t pt-2">
                     <span>Remaining Debt:</span>
-                    <span className={newDebt === 0n ? "text-green-600" : ""}>
+                    <span className={newDebt === BigInt(0) ? "text-green-600" : ""}>
                       {formatCurrency(formatWAD(newDebt))} cNGN
-                      {newDebt === 0n && <CheckCircle className="inline ml-1 h-4 w-4" />}
+                      {newDebt === BigInt(0) && <CheckCircle className="inline ml-1 h-4 w-4" />}
                     </span>
                   </div>
                   
-                  {releasableCollateral > 0n && (
+                  {releasableCollateral > BigInt(0) && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Collateral Unlocked:</span>
                       <span className="text-green-600">
