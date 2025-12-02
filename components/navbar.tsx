@@ -34,11 +34,6 @@ export function Navbar() {
           </div>
 
           <div className="flex gap-2">
-            <Link href="/borrow">
-              <Button className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0 hidden sm:inline-flex">
-                Borrow Now
-              </Button>
-            </Link>
             <WalletConnect />
           </div>
         </div>

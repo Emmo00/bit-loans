@@ -7,7 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 
 export function AppKitProvider({ children }: { children: ReactNode }) {
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as any}>
       <QueryClientProvider client={queryClient}>
         {children}
       </QueryClientProvider>
