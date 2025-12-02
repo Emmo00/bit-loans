@@ -125,7 +125,7 @@ export function RepayModal({ open, onOpenChange }: RepayModalProps) {
   };
 
   const handlePercentageClick = (percentage: number) => {
-    const percentageAmount = (currentDebt * BigInt(percentage)) / 10BigInt(0);
+    const percentageAmount = (currentDebt * BigInt(percentage)) / BigInt(100);
     const maxRepay = percentageAmount < cngnBalance ? percentageAmount : cngnBalance;
     setAmount(formatWAD(maxRepay));
   };

@@ -64,9 +64,9 @@ export default function Repay() {
     );
   }
 
-  const hasDebt = userPosition && userPosition.debt > BigInt(0);
+  const hasDebt = userPosition && userPosition.debtBalance > BigInt(0);
   const repayAmountBN = repayAmount ? parseEther(repayAmount) : BigInt(0);
-  const maxRepayAmount = userPosition?.debt || BigInt(0);
+  const maxRepayAmount = userPosition?.debtBalance || BigInt(0);
 
   // Helper functions for validation
   const isValidAmount = (amount: string) => {
@@ -115,7 +115,7 @@ export default function Repay() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {formatCurrency(formatWAD(userPosition?.debt || BigInt(0)))} cNGN
+                      {formatCurrency(formatWAD(userPosition?.debtBalance || BigInt(0)))} cNGN
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Principal amount borrowed
@@ -130,7 +130,7 @@ export default function Repay() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {formatCurrency(formatWAD(userPosition?.collateral || BigInt(0)))} ETH
+                      {formatCurrency(formatWAD(userPosition?.collateralETH || BigInt(0)))} ETH
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Securing your loan
@@ -151,16 +151,16 @@ export default function Repay() {
                       {userPosition && (
                         <Badge 
                           variant={
-                            userPosition.healthFactor >= 20BigInt(0) 
+                            userPosition.healthFactor >= BigInt(200)
                               ? "default" 
-                              : userPosition.healthFactor >= 11BigInt(0) 
+                              : userPosition.healthFactor >= BigInt(110)
                               ? "secondary" 
                               : "destructive"
                           }
                         >
-                          {userPosition.healthFactor >= 20BigInt(0) 
+                          {userPosition.healthFactor >= BigInt(200) 
                             ? "Healthy" 
-                            : userPosition.healthFactor >= 11BigInt(0) 
+                            : userPosition.healthFactor >= BigInt(110)
                             ? "Moderate Risk" 
                             : "High Risk"}
                         </Badge>
